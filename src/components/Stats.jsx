@@ -2,58 +2,85 @@ import { useRef } from 'react'
 import { useGSAP } from '@gsap/react'
 import { gsap } from 'gsap'
 
+// arc fill percentage (visual, not literal)
 const STATS = [
-  { end: 4,  suffix: '+', label: 'Años programando' },
-  { end: 20, suffix: '+', label: 'Tecnologías' },
-  { end: 6,  suffix: '',  label: 'Repos en GitHub' },
-  { end: 5,  suffix: '+', label: 'Proyectos completados' },
+  { end: 4,  suffix: '+', label: 'Años programando',      arc: 0.62, color: '#00d4ff' },
+  { end: 20, suffix: '+', label: 'Tecnologías dominadas', arc: 0.88, color: '#818cf8' },
+  { end: 6,  suffix: '',  label: 'Repos en GitHub',       arc: 0.55, color: '#34d399' },
+  { end: 5,  suffix: '+', label: 'Proyectos completados', arc: 0.70, color: '#f472b6' },
 ]
+
+const R   = 52          // SVG circle radius
+const CX  = 64          // SVG viewBox center
+const C   = 2 * Math.PI * R   // circumference ≈ 326.7
+const SCRAMBLE = '0123456789'
 
 export default function Stats() {
   const ref = useRef(null)
 
   useGSAP(() => {
     // Cards entrance
-    gsap.from('.stat__card', {
-      y: 50,
+    gsap.from('.stat__item', {
+      y: 60,
       opacity: 0,
-      stagger: 0.12,
-      duration: 0.7,
+      stagger: 0.14,
+      duration: 0.8,
       ease: 'power3.out',
-      scrollTrigger: { trigger: ref.current, start: 'top 80%' },
+      scrollTrigger: { trigger: ref.current, start: 'top 82%' },
     })
 
-    // Counters with bounce on complete
     STATS.forEach((s, i) => {
-      const el = ref.current.querySelectorAll('.stat__num')[i]
+      const numEl  = ref.current.querySelectorAll('.stat__num')[i]
+      const arcEl  = ref.current.querySelectorAll('.stat__arc')[i]
+      const pingEl = ref.current.querySelectorAll('.stat__ping')[i]
+
+      // SVG arc
+      gsap.fromTo(arcEl,
+        { strokeDashoffset: C },
+        {
+          strokeDashoffset: C * (1 - s.arc),
+          duration: 2,
+          ease: 'power3.out',
+          scrollTrigger: { trigger: ref.current, start: 'top 80%' },
+        }
+      )
+
+      // Number scramble → settle
       const obj = { val: 0 }
+      let frame = 0
       gsap.to(obj, {
         val: s.end,
         duration: 1.8,
         ease: 'power2.out',
         scrollTrigger: { trigger: ref.current, start: 'top 80%' },
-        onUpdate() { el.textContent = Math.round(obj.val) + s.suffix },
+        onUpdate() {
+          frame++
+          const progress = obj.val / s.end
+          if (progress < 0.75 && frame % 3 === 0) {
+            numEl.textContent = SCRAMBLE[Math.floor(Math.random() * SCRAMBLE.length)]
+          } else {
+            numEl.textContent = Math.round(obj.val)
+          }
+        },
         onComplete() {
-          gsap.fromTo(el,
-            { scale: 1 },
-            { scale: 1.18, duration: 0.15, yoyo: true, repeat: 1, ease: 'power2.out',
-              onComplete() { gsap.set(el, { scale: 1 }) }
-            }
+          numEl.textContent = s.end
+          // Pulse ring on finish
+          gsap.fromTo(pingEl,
+            { opacity: 0.7, scale: 0.85 },
+            { opacity: 0, scale: 1.3, duration: 0.7, ease: 'power2.out' }
           )
         },
       })
     })
 
-    // Subtle floating on each card (out of phase)
-    ref.current.querySelectorAll('.stat__card').forEach((card, i) => {
-      gsap.to(card, {
-        y: -6,
-        duration: 2 + i * 0.3,
-        repeat: -1,
-        yoyo: true,
-        ease: 'sine.inOut',
-        delay: i * 0.4,
-        scrollTrigger: { trigger: ref.current, start: 'top 80%' },
+    // Hover pulse on each item
+    ref.current.querySelectorAll('.stat__item').forEach((item) => {
+      const ping = item.querySelector('.stat__ping')
+      item.addEventListener('mouseenter', () => {
+        gsap.fromTo(ping,
+          { opacity: 0.5, scale: 0.85 },
+          { opacity: 0, scale: 1.35, duration: 0.6, ease: 'power2.out' }
+        )
       })
     })
   }, { scope: ref })
@@ -62,10 +89,55 @@ export default function Stats() {
     <section ref={ref} className="stats">
       <div className="container">
         <div className="stats__grid">
-          {STATS.map((s) => (
-            <div key={s.label} className="stat__card" data-hover>
-              <span className="stat__num">0{s.suffix}</span>
-              <span className="stat__label">{s.label}</span>
+          {STATS.map((s, i) => (
+            <div key={s.label} className="stat__item">
+              <div className="stat__ring-wrap">
+
+                {/* Pulse ring */}
+                <div
+                  className="stat__ping"
+                  style={{ borderColor: s.color }}
+                />
+
+                {/* SVG arc */}
+                <svg
+                  viewBox={`0 0 ${CX * 2} ${CX * 2}`}
+                  className="stat__svg"
+                  aria-hidden="true"
+                >
+                  {/* Track */}
+                  <circle
+                    cx={CX} cy={CX} r={R}
+                    fill="none"
+                    stroke="rgba(255,255,255,0.06)"
+                    strokeWidth="5"
+                  />
+                  {/* Animated arc */}
+                  <circle
+                    cx={CX} cy={CX} r={R}
+                    fill="none"
+                    stroke={s.color}
+                    strokeWidth="5"
+                    strokeLinecap="round"
+                    strokeDasharray={C}
+                    strokeDashoffset={C}
+                    className="stat__arc"
+                    style={{
+                      filter: `drop-shadow(0 0 6px ${s.color})`,
+                      transformOrigin: `${CX}px ${CX}px`,
+                      transform: 'rotate(-90deg)',
+                    }}
+                  />
+                </svg>
+
+                {/* Number */}
+                <div className="stat__center">
+                  <span className="stat__num" style={{ color: s.color }}>0</span>
+                  <span className="stat__suffix" style={{ color: s.color }}>{s.suffix}</span>
+                </div>
+              </div>
+
+              <p className="stat__label">{s.label}</p>
             </div>
           ))}
         </div>

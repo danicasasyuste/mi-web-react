@@ -662,137 +662,108 @@
   font-weight: 600;
 }
 
-/* ─── Technologies ───────────────────────────────────────────── */
-.technologies { background: var(--bg); }
-
-.tech__grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.25rem;
-}
-
-@media (max-width: 900px) {
-  .tech__grid { grid-template-columns: repeat(2, 1fr); }
-}
-@media (max-width: 560px) {
-  .tech__grid { grid-template-columns: 1fr; }
-}
-
-.tech__group {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 1.5rem;
-  transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
-  position: relative;
+/* ─── Technologies — Orbit system ───────────────────────────── */
+.technologies {
+  background: var(--bg);
   overflow: hidden;
 }
-.tech__group::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: var(--tech-color, var(--accent));
-  opacity: 0.6;
-  transition: opacity 0.25s;
-}
-.tech__group:hover {
-  border-color: var(--border-light);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 30px rgba(0,0,0,0.18);
-}
-.tech__group:hover::after { opacity: 1; }
 
-.tech__group-header {
+.orbit__stage {
+  position: relative;
+  width: 100%;
+  height: 720px;
   display: flex;
   align-items: center;
-  gap: 0.55rem;
-  margin-bottom: 1rem;
+  justify-content: center;
+  margin-top: -1rem;
 }
 
-.tech__dot {
+/* Dashed ring tracks */
+.orbit__track {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px dashed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transform-origin: center center;
+  pointer-events: none;
+}
+
+/* Center orb */
+.orbit__center {
+  position: absolute;
+  z-index: 4;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,212,255,0.12) 0%, var(--bg-card) 70%);
+  border: 1px solid rgba(0, 212, 255, 0.4);
+  box-shadow: 0 0 30px rgba(0,212,255,0.18), inset 0 0 20px rgba(0,212,255,0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+
+/* Orbiting pills */
+.orbit__pill {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  white-space: nowrap;
+  padding: 0.28rem 0.75rem;
+  background: var(--bg-card);
+  border: 1px solid var(--orbit-color, var(--accent));
+  border-radius: 99px;
+  font-size: 0.75rem;
+  color: var(--orbit-color, var(--accent));
+  font-family: var(--mono);
+  letter-spacing: 0.03em;
+  z-index: 3;
+  cursor: default;
+  transition: box-shadow 0.25s, background 0.25s;
+  will-change: transform;
+}
+.orbit__pill:hover {
+  box-shadow: 0 0 14px var(--orbit-color, var(--accent));
+  background: var(--bg);
+}
+
+/* Legend */
+.orbit__legend {
+  display: flex;
+  justify-content: center;
+  gap: 2.5rem;
+  padding-bottom: 2rem;
+  flex-wrap: wrap;
+}
+.orbit__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.orbit__legend-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
-.tech__category {
-  font-size: 0.75rem;
-  font-family: var(--mono);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-weight: 700;
-  line-height: 1;
+@media (max-width: 700px) {
+  .orbit__stage { height: 500px; transform: scale(0.65); transform-origin: top center; margin-bottom: -120px; }
 }
-
-.tech__items {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-}
-
-.tech__badge {
-  padding: 0.28rem 0.65rem;
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  font-size: 0.8rem;
-  color: var(--text);
-  transition: border-color 0.2s, color 0.2s, background 0.2s;
-  cursor: default;
-}
-.tech__badge:hover {
-  border-color: var(--tech-color, var(--accent));
-  color: var(--tech-color, var(--accent));
-  background: var(--bg-card);
-}
-
-/* ─── Technologies — Marquee strip ──────────────────────────── */
-.tech__marquee {
-  overflow: hidden;
-  margin-top: 3rem;
-  padding: 0.85rem 0;
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
-}
-
-.tech__marquee-track {
-  display: flex;
-  gap: 0;
-  width: max-content;
-  animation: marquee-scroll 28s linear infinite;
-}
-
-.tech__marquee:hover .tech__marquee-track {
-  animation-play-state: paused;
-}
-
-@keyframes marquee-scroll {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
-}
-
-.tech__marquee-item {
-  font-family: var(--mono);
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  white-space: nowrap;
-  padding: 0 1.8rem;
-  position: relative;
-}
-.tech__marquee-item::before {
-  content: '/';
-  position: absolute;
-  left: 0.7rem;
-  color: var(--accent);
-  opacity: 0.3;
+@media (max-width: 440px) {
+  .orbit__stage { height: 420px; transform: scale(0.48); margin-bottom: -180px; }
 }
 
 /* ─── Projects ──────────────────────────────────────────────── */
@@ -1088,51 +1059,83 @@
   color: var(--text-muted);
 }
 
-/* ─── Stats ──────────────────────────────────────────────────── */
+/* ─── Stats — SVG arc rings ──────────────────────────────────── */
 .stats {
-  padding: 4rem 0;
+  padding: 5rem 0;
+  background: var(--bg-surface);
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
-  background: var(--bg-surface);
 }
 .stats__grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1px;
-  background: var(--border);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  overflow: hidden;
-}
-.stat__card {
-  background: var(--bg-card);
-  padding: 2.5rem 2rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  text-align: center;
-  cursor: default;
-  transition: background 0.25s;
-}
-.stat__card:hover { background: rgba(0,212,255,0.04); }
-.stat__num {
-  font-size: clamp(2.2rem, 5vw, 3.5rem);
-  font-weight: 900;
-  letter-spacing: -0.04em;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  line-height: 1;
-}
-.stat__label {
-  font-size: 0.82rem;
-  color: var(--text-muted);
-  letter-spacing: 0.03em;
+  gap: 2rem;
 }
 @media (max-width: 640px) {
   .stats__grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.stat__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  cursor: default;
+}
+
+.stat__ring-wrap {
+  position: relative;
+  width: 128px;
+  height: 128px;
+}
+
+/* Ping pulse ring */
+.stat__ping {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.stat__svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Number centered inside ring */
+.stat__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+}
+.stat__num {
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.stat__suffix {
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1;
+  align-self: flex-start;
+  margin-top: 0.2rem;
+}
+
+.stat__label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-transform: uppercase;
+  font-family: var(--mono);
 }
 
 /* ─── Project single card ────────────────────────────────────── */
