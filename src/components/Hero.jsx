@@ -10,6 +10,7 @@ const ROLES = [
   'Entusiasta de IA & Big Data',
   'Desarrollador de Apps Móviles',
 ]
+const SCRAMBLE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ01#@$%&!'
 
 function useTypewriter(phrases) {
   const [state, setState] = useState({ text: '', idx: 0, phase: 'typing' })
@@ -81,6 +82,30 @@ export default function Hero() {
       .from('.hero__cta-group > *', { y: 22, opacity: 0, stagger: 0.12, duration: 0.5 }, '-=0.3')
       .from('.hero__social > *',    { opacity: 0, y: 12, stagger: 0.08, duration: 0.4 }, '-=0.2')
       .from('.hero__scroll',        { opacity: 0, duration: 0.5 }, '-=0.15')
+
+    // Text scramble on name letters
+    const letters = containerRef.current.querySelectorAll('.hero__letter:not(.hero__space)')
+    letters.forEach((el, i) => {
+      const original = el.textContent
+      const obj = { t: 0 }
+      let tick = 0
+      gsap.to(obj, {
+        t: 1,
+        duration: 0.75,
+        delay: 0.15 + i * 0.05,
+        ease: 'power2.out',
+        onUpdate() {
+          tick++
+          if (tick % 2 !== 0) return
+          if (obj.t < 0.65) {
+            el.textContent = SCRAMBLE[Math.floor(Math.random() * SCRAMBLE.length)]
+          } else {
+            el.textContent = original
+          }
+        },
+        onComplete() { el.textContent = original },
+      })
+    })
 
     // Scroll indicator bounce
     gsap.to('.hero__scroll-dot', {

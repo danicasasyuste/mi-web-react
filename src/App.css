@@ -750,6 +750,51 @@
   background: var(--bg-card);
 }
 
+/* ─── Technologies — Marquee strip ──────────────────────────── */
+.tech__marquee {
+  overflow: hidden;
+  margin-top: 3rem;
+  padding: 0.85rem 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+}
+
+.tech__marquee-track {
+  display: flex;
+  gap: 0;
+  width: max-content;
+  animation: marquee-scroll 28s linear infinite;
+}
+
+.tech__marquee:hover .tech__marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.tech__marquee-item {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+  padding: 0 1.8rem;
+  position: relative;
+}
+.tech__marquee-item::before {
+  content: '/';
+  position: absolute;
+  left: 0.7rem;
+  color: var(--accent);
+  opacity: 0.3;
+}
+
 /* ─── Projects ──────────────────────────────────────────────── */
 .projects { background: var(--bg-surface); }
 

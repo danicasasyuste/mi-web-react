@@ -41,6 +41,9 @@ const GROUPS = [
   },
 ]
 
+// Flat list for the marquee strip
+const ALL_ITEMS = GROUPS.flatMap((g) => g.items)
+
 export default function Technologies() {
   const containerRef = useRef(null)
 
@@ -65,7 +68,7 @@ export default function Technologies() {
       scrollTrigger: { trigger: containerRef.current, start: 'top 72%' },
     })
 
-    // Badges: stagger after groups settle
+    // Badges pop in with scale
     gsap.from('.tech__badge', {
       scale: 0.75,
       opacity: 0,
@@ -103,6 +106,18 @@ export default function Technologies() {
                 ))}
               </div>
             </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Infinite marquee strip */}
+      <div className="tech__marquee" aria-hidden="true">
+        <div className="tech__marquee-track">
+          {ALL_ITEMS.map((item, i) => (
+            <span key={i} className="tech__marquee-item">{item}</span>
+          ))}
+          {ALL_ITEMS.map((item, i) => (
+            <span key={`b${i}`} className="tech__marquee-item">{item}</span>
           ))}
         </div>
       </div>

@@ -8,8 +8,8 @@ const JOBS = [
     title: 'Programador Web',
     company: 'ZARGOTEL SL',
     location: 'Valencia',
-    period: '2025 - 2026',
-    current: true,
+    period: '2024 – 2025',
+    current: false,
     tasks: [
       'Diseno y maquetacion de paginas web',
       'Desarrollo y creacion de sitios web completos',
