@@ -759,11 +759,54 @@
   flex-shrink: 0;
 }
 
-@media (max-width: 700px) {
-  .orbit__stage { height: 500px; transform: scale(0.65); transform-origin: top center; margin-bottom: -120px; }
+/* Desktop: orbit visible, mobile grid hidden */
+@media (min-width: 768px) {
+  .orbit__mobile { display: none; }
 }
-@media (max-width: 440px) {
-  .orbit__stage { height: 420px; transform: scale(0.48); margin-bottom: -180px; }
+
+/* Mobile: hide orbit, show clean grid */
+@media (max-width: 767px) {
+  .orbit__stage  { display: none; }
+  .orbit__legend { display: none; }
+  .orbit__mobile {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding-bottom: 3rem;
+  }
+}
+
+.orbit__mobile-group { display: flex; flex-direction: column; gap: 0.75rem; }
+
+.orbit__mobile-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.orbit__mobile-label {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+}
+
+.orbit__mobile-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.orbit__mobile-badge {
+  padding: 0.28rem 0.75rem;
+  background: var(--bg-card);
+  border: 1px solid var(--orbit-color, var(--accent));
+  border-radius: 99px;
+  font-size: 0.8rem;
+  color: var(--orbit-color, var(--accent));
+  font-family: var(--mono);
+  letter-spacing: 0.03em;
 }
 
 /* ─── Projects ──────────────────────────────────────────────── */

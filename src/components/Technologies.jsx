@@ -5,48 +5,52 @@ import { gsap } from 'gsap'
 const RINGS = [
   {
     radius: 120,
-    speed: 0.0055,
+    speed: 0.0018,   // mucho más lento
     direction: 1,
     color: '#00d4ff',
+    label: 'Lenguajes & Frameworks',
     items: ['React', 'Flutter', 'Angular', 'Java', 'Python'],
   },
   {
-    radius: 210,
-    speed: 0.0035,
+    radius: 215,
+    speed: 0.0011,
     direction: -1,
     color: '#818cf8',
+    label: 'Web & Bases de datos',
     items: ['Kotlin', 'JavaScript', 'MySQL', 'MongoDB', 'Firebase', 'Git', 'Bootstrap', 'PHP'],
   },
   {
-    radius: 310,
-    speed: 0.002,
+    radius: 318,
+    speed: 0.00065,
     direction: 1,
     color: '#34d399',
+    label: 'Big Data, IA & DevOps',
     items: ['DB4o', 'XQuery', 'Scikit-learn', 'n8n', 'Modelos supervisados', 'Apache Kafka', 'Apache Nifi', 'Debezium', 'Apache Flume'],
   },
 ]
 
 export default function Technologies() {
-  const containerRef = useRef(null)
-  const anglesRef    = useRef(RINGS.map(() => 0))
-  const pillMapRef   = useRef(new Map())
-  const pausedRef    = useRef(false)
+  const containerRef  = useRef(null)
+  const anglesRef     = useRef(RINGS.map(() => 0))
+  const pillMapRef    = useRef(new Map())
+  // smooth speed multiplier — tweened on hover
+  const speedMultRef  = useRef({ val: 1 })
 
-  // GSAP entrance animations
   useGSAP(() => {
+    gsap.from(containerRef.current.querySelectorAll('.section__tag, .section__title'), {
+      clipPath: 'inset(0 0 100% 0)',
+      y: 18,
+      stagger: 0.12,
+      duration: 0.7,
+      ease: 'power3.out',
+      scrollTrigger: { trigger: containerRef.current, start: 'top 82%' },
+    })
     gsap.from('.orbit__center', {
-      scale: 0,
-      opacity: 0,
-      duration: 0.9,
-      ease: 'back.out(1.8)',
+      scale: 0, opacity: 0, duration: 0.9, ease: 'back.out(1.8)',
       scrollTrigger: { trigger: containerRef.current, start: 'top 78%' },
     })
     gsap.from('.orbit__track', {
-      scale: 0,
-      opacity: 0,
-      stagger: 0.18,
-      duration: 0.8,
-      ease: 'power3.out',
+      scale: 0, opacity: 0, stagger: 0.18, duration: 0.8, ease: 'power3.out',
       scrollTrigger: { trigger: containerRef.current, start: 'top 78%' },
     })
     gsap.from('.orbit__pill', {
@@ -56,23 +60,12 @@ export default function Technologies() {
       ease: 'power2.out',
       scrollTrigger: { trigger: containerRef.current, start: 'top 72%' },
     })
-    // Title
-    gsap.from(containerRef.current.querySelectorAll('.section__tag, .section__title'), {
-      clipPath: 'inset(0 0 100% 0)',
-      y: 18,
-      stagger: 0.12,
-      duration: 0.7,
-      ease: 'power3.out',
-      scrollTrigger: { trigger: containerRef.current, start: 'top 82%' },
-    })
   }, { scope: containerRef })
 
-  // Orbit ticker — runs independently of React lifecycle
   useEffect(() => {
     const container = containerRef.current
     if (!container) return
 
-    // Cache element refs + init centering
     RINGS.forEach((ring, ri) => {
       ring.items.forEach((_, ii) => {
         const el = container.querySelector(`[data-ring="${ri}"][data-item="${ii}"]`)
@@ -84,9 +77,9 @@ export default function Technologies() {
     })
 
     const tick = () => {
-      if (pausedRef.current) return
+      const mult = speedMultRef.current.val
       RINGS.forEach((ring, ri) => {
-        anglesRef.current[ri] += ring.speed * ring.direction
+        anglesRef.current[ri] += ring.speed * ring.direction * mult
         const base = anglesRef.current[ri]
         ring.items.forEach((_, ii) => {
           const el = pillMapRef.current.get(`${ri}-${ii}`)
@@ -99,17 +92,17 @@ export default function Technologies() {
 
     gsap.ticker.add(tick)
 
-    // Pause orbit when hovering the stage
+    // Hover: smooth decelerate/accelerate instead of hard stop
     const stage = container.querySelector('.orbit__stage')
-    const pause  = () => { pausedRef.current = true  }
-    const resume = () => { pausedRef.current = false }
-    stage?.addEventListener('mouseenter', pause)
-    stage?.addEventListener('mouseleave', resume)
+    const decel = () => gsap.to(speedMultRef.current, { val: 0.12, duration: 0.6, ease: 'power2.out' })
+    const accel = () => gsap.to(speedMultRef.current, { val: 1,    duration: 1.0, ease: 'power2.inOut' })
+    stage?.addEventListener('mouseenter', decel)
+    stage?.addEventListener('mouseleave', accel)
 
     return () => {
       gsap.ticker.remove(tick)
-      stage?.removeEventListener('mouseenter', pause)
-      stage?.removeEventListener('mouseleave', resume)
+      stage?.removeEventListener('mouseenter', decel)
+      stage?.removeEventListener('mouseleave', accel)
     }
   }, [])
 
@@ -122,26 +115,18 @@ export default function Technologies() {
         </div>
       </div>
 
+      {/* Desktop: orbit stage */}
       <div className="orbit__stage">
-        {/* Dashed ring tracks */}
         {RINGS.map((ring, ri) => (
           <div
             key={ri}
             className="orbit__track"
-            style={{
-              width:  ring.radius * 2,
-              height: ring.radius * 2,
-              borderColor: `${ring.color}22`,
-            }}
+            style={{ width: ring.radius * 2, height: ring.radius * 2, borderColor: `${ring.color}22` }}
           />
         ))}
 
-        {/* Center glow */}
-        <div className="orbit__center">
-          <span>STACK</span>
-        </div>
+        <div className="orbit__center"><span>STACK</span></div>
 
-        {/* Orbiting pills */}
         {RINGS.map((ring, ri) =>
           ring.items.map((item, ii) => (
             <span
@@ -157,14 +142,37 @@ export default function Technologies() {
         )}
       </div>
 
-      {/* Legend */}
+      {/* Mobile: clean badge grid */}
+      <div className="orbit__mobile container">
+        {RINGS.map((ring) => (
+          <div key={ring.color} className="orbit__mobile-group">
+            <div className="orbit__mobile-header">
+              <span className="orbit__legend-dot" style={{ background: ring.color }} />
+              <span className="orbit__mobile-label" style={{ color: ring.color }}>
+                {ring.label}
+              </span>
+            </div>
+            <div className="orbit__mobile-items">
+              {ring.items.map((item) => (
+                <span
+                  key={item}
+                  className="orbit__mobile-badge"
+                  style={{ '--orbit-color': ring.color }}
+                >
+                  {item}
+                </span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Legend (desktop only) */}
       <div className="orbit__legend container">
-        {RINGS.map((ring, ri) => (
-          <div key={ri} className="orbit__legend-item">
+        {RINGS.map((ring) => (
+          <div key={ring.color} className="orbit__legend-item">
             <span className="orbit__legend-dot" style={{ background: ring.color }} />
-            <span style={{ color: ring.color }}>
-              {['Lenguajes & Frameworks', 'Web & Bases de datos', 'Big Data, IA & DevOps'][ri]}
-            </span>
+            <span style={{ color: ring.color }}>{ring.label}</span>
           </div>
         ))}
       </div>

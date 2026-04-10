@@ -2,7 +2,6 @@ import { useRef } from 'react'
 import { useGSAP } from '@gsap/react'
 import { gsap } from 'gsap'
 
-// arc fill percentage (visual, not literal)
 const STATS = [
   { end: 4,  suffix: '+', label: 'Años programando',      arc: 0.62, color: '#00d4ff' },
   { end: 20, suffix: '+', label: 'Tecnologías dominadas', arc: 0.88, color: '#818cf8' },
@@ -10,16 +9,15 @@ const STATS = [
   { end: 5,  suffix: '+', label: 'Proyectos completados', arc: 0.70, color: '#f472b6' },
 ]
 
-const R   = 52          // SVG circle radius
-const CX  = 64          // SVG viewBox center
-const C   = 2 * Math.PI * R   // circumference ≈ 326.7
+const R  = 52
+const CX = 64
+const C  = 2 * Math.PI * R   // ≈ 326.7
 const SCRAMBLE = '0123456789'
 
 export default function Stats() {
   const ref = useRef(null)
 
   useGSAP(() => {
-    // Cards entrance
     gsap.from('.stat__item', {
       y: 60,
       opacity: 0,
@@ -34,7 +32,7 @@ export default function Stats() {
       const arcEl  = ref.current.querySelectorAll('.stat__arc')[i]
       const pingEl = ref.current.querySelectorAll('.stat__ping')[i]
 
-      // SVG arc
+      // Animate the SVG arc via strokeDashoffset only — no transform conflict
       gsap.fromTo(arcEl,
         { strokeDashoffset: C },
         {
@@ -64,16 +62,14 @@ export default function Stats() {
         },
         onComplete() {
           numEl.textContent = s.end
-          // Pulse ring on finish
           gsap.fromTo(pingEl,
             { opacity: 0.7, scale: 0.85 },
-            { opacity: 0, scale: 1.3, duration: 0.7, ease: 'power2.out' }
+            { opacity: 0, scale: 1.35, duration: 0.7, ease: 'power2.out' }
           )
         },
       })
     })
 
-    // Hover pulse on each item
     ref.current.querySelectorAll('.stat__item').forEach((item) => {
       const ping = item.querySelector('.stat__ping')
       item.addEventListener('mouseenter', () => {
@@ -89,30 +85,25 @@ export default function Stats() {
     <section ref={ref} className="stats">
       <div className="container">
         <div className="stats__grid">
-          {STATS.map((s, i) => (
+          {STATS.map((s) => (
             <div key={s.label} className="stat__item">
               <div className="stat__ring-wrap">
 
-                {/* Pulse ring */}
-                <div
-                  className="stat__ping"
-                  style={{ borderColor: s.color }}
-                />
+                <div className="stat__ping" style={{ borderColor: s.color }} />
 
-                {/* SVG arc */}
                 <svg
                   viewBox={`0 0 ${CX * 2} ${CX * 2}`}
                   className="stat__svg"
                   aria-hidden="true"
                 >
-                  {/* Track */}
+                  {/* Track ring */}
                   <circle
                     cx={CX} cy={CX} r={R}
                     fill="none"
                     stroke="rgba(255,255,255,0.06)"
                     strokeWidth="5"
                   />
-                  {/* Animated arc */}
+                  {/* Animated arc — use SVG transform attr, NOT CSS transform */}
                   <circle
                     cx={CX} cy={CX} r={R}
                     fill="none"
@@ -122,15 +113,11 @@ export default function Stats() {
                     strokeDasharray={C}
                     strokeDashoffset={C}
                     className="stat__arc"
-                    style={{
-                      filter: `drop-shadow(0 0 6px ${s.color})`,
-                      transformOrigin: `${CX}px ${CX}px`,
-                      transform: 'rotate(-90deg)',
-                    }}
+                    transform={`rotate(-90 ${CX} ${CX})`}
+                    style={{ filter: `drop-shadow(0 0 6px ${s.color})` }}
                   />
                 </svg>
 
-                {/* Number */}
                 <div className="stat__center">
                   <span className="stat__num" style={{ color: s.color }}>0</span>
                   <span className="stat__suffix" style={{ color: s.color }}>{s.suffix}</span>
