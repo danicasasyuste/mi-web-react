@@ -2,26 +2,27 @@ import { useRef, useEffect } from 'react'
 import { useGSAP } from '@gsap/react'
 import { gsap } from 'gsap'
 
+// speed: radians per millisecond (frame-rate independent via deltaTime)
 const RINGS = [
   {
-    radius: 120,
-    speed: 0.0018,   // mucho más lento
+    radius: 95,
+    speed: 0.000048,   // ~full lap in 130s
     direction: 1,
     color: '#00d4ff',
     label: 'Lenguajes & Frameworks',
     items: ['React', 'Flutter', 'Angular', 'Java', 'Python'],
   },
   {
-    radius: 215,
-    speed: 0.0011,
+    radius: 205,
+    speed: 0.000028,   // ~full lap in 225s
     direction: -1,
     color: '#818cf8',
     label: 'Web & Bases de datos',
     items: ['Kotlin', 'JavaScript', 'MySQL', 'MongoDB', 'Firebase', 'Git', 'Bootstrap', 'PHP'],
   },
   {
-    radius: 318,
-    speed: 0.00065,
+    radius: 355,
+    speed: 0.000016,   // ~full lap in 390s
     direction: 1,
     color: '#34d399',
     label: 'Big Data, IA & DevOps',
@@ -30,19 +31,15 @@ const RINGS = [
 ]
 
 export default function Technologies() {
-  const containerRef  = useRef(null)
-  const anglesRef     = useRef(RINGS.map(() => 0))
-  const pillMapRef    = useRef(new Map())
-  // smooth speed multiplier — tweened on hover
-  const speedMultRef  = useRef({ val: 1 })
+  const containerRef = useRef(null)
+  const anglesRef    = useRef(RINGS.map(() => 0))
+  const pillMapRef   = useRef(new Map())
+  const speedMultRef = useRef({ val: 1 })
 
   useGSAP(() => {
     gsap.from(containerRef.current.querySelectorAll('.section__tag, .section__title'), {
       clipPath: 'inset(0 0 100% 0)',
-      y: 18,
-      stagger: 0.12,
-      duration: 0.7,
-      ease: 'power3.out',
+      y: 18, stagger: 0.12, duration: 0.7, ease: 'power3.out',
       scrollTrigger: { trigger: containerRef.current, start: 'top 82%' },
     })
     gsap.from('.orbit__center', {
@@ -56,8 +53,7 @@ export default function Technologies() {
     gsap.from('.orbit__pill', {
       opacity: 0,
       stagger: { each: 0.04, from: 'random' },
-      duration: 0.5,
-      ease: 'power2.out',
+      duration: 0.5, ease: 'power2.out',
       scrollTrigger: { trigger: containerRef.current, start: 'top 72%' },
     })
   }, { scope: containerRef })
@@ -66,6 +62,7 @@ export default function Technologies() {
     const container = containerRef.current
     if (!container) return
 
+    // Cache refs + set centering offset
     RINGS.forEach((ring, ri) => {
       ring.items.forEach((_, ii) => {
         const el = container.querySelector(`[data-ring="${ri}"][data-item="${ii}"]`)
@@ -76,10 +73,12 @@ export default function Technologies() {
       })
     })
 
-    const tick = () => {
+    // tick(time, deltaTime) — deltaTime in ms, frame-rate independent
+    const tick = (_time, deltaTime) => {
+      const dt   = Math.min(deltaTime, 100) // cap at 100ms (e.g. after tab switch)
       const mult = speedMultRef.current.val
       RINGS.forEach((ring, ri) => {
-        anglesRef.current[ri] += ring.speed * ring.direction * mult
+        anglesRef.current[ri] += ring.speed * ring.direction * mult * dt
         const base = anglesRef.current[ri]
         ring.items.forEach((_, ii) => {
           const el = pillMapRef.current.get(`${ri}-${ii}`)
@@ -92,10 +91,10 @@ export default function Technologies() {
 
     gsap.ticker.add(tick)
 
-    // Hover: smooth decelerate/accelerate instead of hard stop
-    const stage = container.querySelector('.orbit__stage')
-    const decel = () => gsap.to(speedMultRef.current, { val: 0.12, duration: 0.6, ease: 'power2.out' })
-    const accel = () => gsap.to(speedMultRef.current, { val: 1,    duration: 1.0, ease: 'power2.inOut' })
+    // Smooth decelerate on hover — overwrite kills any in-progress tween
+    const stage  = container.querySelector('.orbit__stage')
+    const decel  = () => gsap.to(speedMultRef.current, { val: 0.08, duration: 0.8, ease: 'power2.out',  overwrite: true })
+    const accel  = () => gsap.to(speedMultRef.current, { val: 1,    duration: 1.4, ease: 'power2.inOut', overwrite: true })
     stage?.addEventListener('mouseenter', decel)
     stage?.addEventListener('mouseleave', accel)
 
@@ -115,13 +114,13 @@ export default function Technologies() {
         </div>
       </div>
 
-      {/* Desktop: orbit stage */}
+      {/* Desktop orbit */}
       <div className="orbit__stage">
         {RINGS.map((ring, ri) => (
           <div
             key={ri}
             className="orbit__track"
-            style={{ width: ring.radius * 2, height: ring.radius * 2, borderColor: `${ring.color}22` }}
+            style={{ width: ring.radius * 2, height: ring.radius * 2, borderColor: `${ring.color}20` }}
           />
         ))}
 
@@ -142,23 +141,17 @@ export default function Technologies() {
         )}
       </div>
 
-      {/* Mobile: clean badge grid */}
+      {/* Mobile grid */}
       <div className="orbit__mobile container">
         {RINGS.map((ring) => (
           <div key={ring.color} className="orbit__mobile-group">
             <div className="orbit__mobile-header">
               <span className="orbit__legend-dot" style={{ background: ring.color }} />
-              <span className="orbit__mobile-label" style={{ color: ring.color }}>
-                {ring.label}
-              </span>
+              <span className="orbit__mobile-label" style={{ color: ring.color }}>{ring.label}</span>
             </div>
             <div className="orbit__mobile-items">
               {ring.items.map((item) => (
-                <span
-                  key={item}
-                  className="orbit__mobile-badge"
-                  style={{ '--orbit-color': ring.color }}
-                >
+                <span key={item} className="orbit__mobile-badge" style={{ '--orbit-color': ring.color }}>
                   {item}
                 </span>
               ))}
@@ -167,7 +160,7 @@ export default function Technologies() {
         ))}
       </div>
 
-      {/* Legend (desktop only) */}
+      {/* Legend desktop */}
       <div className="orbit__legend container">
         {RINGS.map((ring) => (
           <div key={ring.color} className="orbit__legend-item">

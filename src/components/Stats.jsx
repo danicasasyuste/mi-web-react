@@ -32,16 +32,16 @@ export default function Stats() {
       const arcEl  = ref.current.querySelectorAll('.stat__arc')[i]
       const pingEl = ref.current.querySelectorAll('.stat__ping')[i]
 
-      // Animate the SVG arc via strokeDashoffset only — no transform conflict
-      gsap.fromTo(arcEl,
-        { strokeDashoffset: C },
-        {
-          strokeDashoffset: C * (1 - s.arc),
-          duration: 2,
-          ease: 'power3.out',
-          scrollTrigger: { trigger: ref.current, start: 'top 80%' },
-        }
-      )
+      // Set initial state explicitly before animating
+      gsap.set(arcEl, { strokeDashoffset: C })
+
+      // Animate arc (no transform involved — <g> handles rotation)
+      gsap.to(arcEl, {
+        strokeDashoffset: C * (1 - s.arc),
+        duration: 2,
+        ease: 'power3.out',
+        scrollTrigger: { trigger: ref.current, start: 'top 80%' },
+      })
 
       // Number scramble → settle
       const obj = { val: 0 }
@@ -96,26 +96,32 @@ export default function Stats() {
                   className="stat__svg"
                   aria-hidden="true"
                 >
-                  {/* Track ring */}
+                  {/* Track */}
                   <circle
                     cx={CX} cy={CX} r={R}
                     fill="none"
-                    stroke="rgba(255,255,255,0.06)"
+                    stroke="rgba(255,255,255,0.07)"
                     strokeWidth="5"
                   />
-                  {/* Animated arc — use SVG transform attr, NOT CSS transform */}
-                  <circle
-                    cx={CX} cy={CX} r={R}
-                    fill="none"
-                    stroke={s.color}
-                    strokeWidth="5"
-                    strokeLinecap="round"
-                    strokeDasharray={C}
-                    strokeDashoffset={C}
-                    className="stat__arc"
-                    transform={`rotate(-90 ${CX} ${CX})`}
-                    style={{ filter: `drop-shadow(0 0 6px ${s.color})` }}
-                  />
+                  {/*
+                    Rotation via <g> SVG attribute — GSAP never touches this transform.
+                    No filter on the arc itself (drop-shadow causes bbox artifacts
+                    when dashoffset = full circumference).
+                    strokeLinecap="butt" avoids endpoint cap artifacts.
+                  */}
+                  <g transform={`rotate(-90 ${CX} ${CX})`}>
+                    <circle
+                      cx={CX} cy={CX} r={R}
+                      fill="none"
+                      stroke={s.color}
+                      strokeWidth="5"
+                      strokeLinecap="butt"
+                      strokeDasharray={C}
+                      strokeDashoffset={C}
+                      className="stat__arc"
+                    />
+                  </g>
+
                 </svg>
 
                 <div className="stat__center">
